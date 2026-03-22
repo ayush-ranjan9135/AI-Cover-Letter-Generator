@@ -51,7 +51,9 @@ const CoverGenerator = () => {
             });
             setResumeText(response.data.text);
         } catch (err) {
-            setError('Failed to parse PDF resume.');
+            console.error("Upload error:", err);
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to parse PDF resume.';
+            setError(typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
         } finally {
             setIsParsing(false);
         }
@@ -71,7 +73,9 @@ const CoverGenerator = () => {
             });
             setOutput(response.data.letter);
         } catch (err) {
-            setError('Neural synthesis failed. Check your connection.');
+            console.error("Synthesis error:", err);
+            const errorMessage = err.response?.data?.error || err.message || 'Neural synthesis failed.';
+            setError(typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
         } finally {
             setIsGenerating(false);
         }

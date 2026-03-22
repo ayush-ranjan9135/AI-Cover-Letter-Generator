@@ -47,10 +47,10 @@ const ATSScore = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 timeout: 30000 
             });
-            setResumeText(response.data.text);
         } catch (err) {
             console.error("Upload error:", err);
-            setError(err.response?.data?.error || 'Failed to parse PDF resume.');
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to parse PDF resume.';
+            setError(typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
         } finally {
             setIsParsing(false);
         }
@@ -72,10 +72,10 @@ const ATSScore = () => {
                 ...formData,
                 resumeText
             });
-            setAtsResult(response.data);
         } catch (err) {
             console.error("ATS error:", err);
-            setError('Failed to calculate ATS score. Check your connection.');
+            const errorMessage = err.response?.data?.error || err.message || 'Failed to calculate ATS score.';
+            setError(typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage);
         } finally {
             setIsScoring(false);
         }

@@ -39,29 +39,30 @@ app.use(express.json());
 // PDF Parsing Endpoint
 app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
   console.log('PDF upload request received...');
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    console.log(`Parsing file: ${req.file.path}`);
-    const dataBuffer = fs.readFileSync(req.file.path);
-    const parser = new pdf.PDFParse({ data: dataBuffer });
-    const result = await parser.getText();
-    
-    console.log('PDF parsed successfully, length:', result.text.length);
-    res.json({ text: result.text });
-  } catch (error) {
-    console.error('PDF Parsing Error:', error);
+  const pdfParser = new PDFParser(null, 1); // 1 = text only
+
+  pdfParser.on("pdfParser_dataError", errData => {
+    console.error('PDF Parsing Error:', errData.parserError);
     res.status(500).json({ error: 'Failed to parse PDF resume.' });
-  } finally {
-    // Cleanup the uploaded file
-    if (req.file && fs.existsSync(req.file.path)) {
-      try {
-        fs.unlinkSync(req.file.path);
-        console.log('Temp file cleaned up.');
-      } catch (e) {
-        console.error('Cleanup Error:', e);
-      }
-    }
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+  });
+
+  pdfParser.on("pdfParser_dataReady", pdfData => {
+    const text = pdfParser.getRawTextContent();
+    console.log('PDF parsed successfully, length:', text.length);
+    res.json({ text });
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+  });
+
+  try {
+    console.log(`Loading file: ${req.file.path}`);
+    pdfParser.loadPDF(req.file.path);
+  } catch (error) {
+    console.error('File Loading Error:', error);
+    res.status(500).json({ error: 'Internal server error during PDF load.' });
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
   }
 });
 
