@@ -38,42 +38,44 @@ app.use(express.json());
 
 // PDF Parsing Endpoint
 app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
-  console.log('PDF upload request received...');
+  console.log('[Parser] PDF upload request received...');
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   const pdfParser = new PDFParser(null, 1);
 
   const parsePromise = new Promise((resolve, reject) => {
-    pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
+    pdfParser.on("pdfParser_dataError", errData => {
+        console.error('[Parser] Event Error:', errData);
+        reject(new Error(errData.parserError || "Parser emitted error event"));
+    });
     pdfParser.on("pdfParser_dataReady", () => {
+      console.log('[Parser] Data Ready event received');
       let text = pdfParser.getRawTextContent();
-      try {
-          text = decodeURIComponent(text);
-      } catch (e) {
-          console.warn('Could not decode PDF text fully, using raw.');
-      }
+      try { text = decodeURIComponent(text); } catch (e) { console.warn('[Parser] URL decode failed'); }
       resolve(text);
     });
   });
 
   try {
-    console.log(`Loading file: ${req.file.path}`);
-    pdfParser.loadPDF(req.file.path);
+    const dataBuffer = fs.readFileSync(req.file.path);
+    console.log(`[Parser] File read into buffer, size: ${dataBuffer.length} bytes`);
+    
+    pdfParser.parseBuffer(dataBuffer);
     const text = await parsePromise;
     
     if (!text || text.trim().length === 0) {
-        throw new Error("Could not extract any text from the PDF.");
+        throw new Error("Text extraction returned empty string.");
     }
 
-    console.log('PDF parsed successfully, length:', text.length);
+    console.log('[Parser] Success! Final text length:', text.length);
     res.json({ text });
   } catch (error) {
-    console.error('PDF Parsing Error:', error);
+    console.error('[Parser] Final Catch:', error.message);
     res.status(500).json({ error: 'Failed to extract text from resume: ' + (error.message || 'Parser failure') });
   } finally {
     if (req.file && fs.existsSync(req.file.path)) {
-      try { fs.unlinkSync(req.file.path); console.log('Temp file cleaned up.'); }
-      catch (e) { console.error('Cleanup Error:', e); }
+      try { fs.unlinkSync(req.file.path); console.log('[Parser] Temp file cleaned up.'); }
+      catch (e) { console.error('[Parser] Cleanup Error:', e); }
     }
   }
 });
