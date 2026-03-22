@@ -8,11 +8,11 @@ const AnimatedSphere = ({ color }) => {
   const mesh = useRef();
 
   useFrame((state) => {
-    const { clock } = state;
+    const time = state.clock.getElapsedTime();
     if (mesh.current) {
       mesh.current.distort = THREE.MathUtils.lerp(
         mesh.current.distort,
-        0.4 + Math.sin(clock.elapsedTime) * 0.1,
+        0.4 + Math.sin(time) * 0.1,
         0.05
       );
     }

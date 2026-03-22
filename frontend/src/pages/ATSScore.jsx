@@ -58,8 +58,19 @@ const ATSScore = () => {
 
     const calculateATS = async (e) => {
         if (e) e.preventDefault();
+        console.log('[DEBUG] calculateATS triggered');
+        console.log('[DEBUG] resumeText length:', resumeText?.length || 0);
+        console.log('[DEBUG] role:', formData.role);
+        console.log('[DEBUG] skills:', formData.skills);
+
+        if (isParsing) {
+            console.log('[DEBUG] Blocked: Still parsing resume...');
+            return;
+        }
+        
         if (!resumeText || !formData.role || !formData.skills) {
-            setError('Please upload a resume and fill in the target role & skills.');
+            console.warn('[DEBUG] Validation failed: Missing required fields');
+            setError(resumeText ? 'Please fill in the target role & skills.' : 'Please wait for the resume to finish processing or upload one.');
             return;
         }
 

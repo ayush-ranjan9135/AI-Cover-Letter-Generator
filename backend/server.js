@@ -48,11 +48,20 @@ app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
         console.error('[Parser] Event Error:', errData);
         reject(new Error(errData.parserError || "Parser emitted error event"));
     });
-    pdfParser.on("pdfParser_dataReady", () => {
+    pdfParser.on("pdfParser_dataReady", (pdfData) => {
       console.log('[Parser] Data Ready event received');
-      let text = pdfParser.getRawTextContent();
-      try { text = decodeURIComponent(text); } catch (e) { console.warn('[Parser] URL decode failed'); }
-      resolve(text);
+      try {
+        const text = pdfData.Pages
+          .flatMap(p => p.Texts)
+          .map(t => t.R.map(r => {
+            try { return decodeURIComponent(r.T); } catch { return r.T; }
+          }).join(''))
+          .join(' ');
+        resolve(text);
+      } catch (e) {
+        console.error('[Parser] Manual extraction failed:', e);
+        reject(e);
+      }
     });
   });
 
@@ -68,6 +77,7 @@ app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
     }
 
     console.log('[Parser] Success! Final text length:', text.length);
+    console.log('[Parser] Sample:', text.substring(0, 50).replace(/\n/g, ' '));
     res.json({ text });
   } catch (error) {
     console.error('[Parser] Final Catch:', error.message);
