@@ -41,28 +41,35 @@ app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
   console.log('PDF upload request received...');
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-  const pdfParser = new PDFParser(null, 1); // 1 = text only
+  const pdfParser = new PDFParser(null, 1);
 
-  pdfParser.on("pdfParser_dataError", errData => {
-    console.error('PDF Parsing Error:', errData.parserError);
-    res.status(500).json({ error: 'Failed to parse PDF resume.' });
-    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-  });
-
-  pdfParser.on("pdfParser_dataReady", pdfData => {
-    const text = pdfParser.getRawTextContent();
-    console.log('PDF parsed successfully, length:', text.length);
-    res.json({ text });
-    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+  const parsePromise = new Promise((resolve, reject) => {
+    pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
+    pdfParser.on("pdfParser_dataReady", () => {
+      const text = pdfParser.getRawTextContent();
+      resolve(text);
+    });
   });
 
   try {
     console.log(`Loading file: ${req.file.path}`);
     pdfParser.loadPDF(req.file.path);
+    const text = await parsePromise;
+    
+    if (!text || text.trim().length === 0) {
+        throw new Error("Could not extract any text from the PDF.");
+    }
+
+    console.log('PDF parsed successfully, length:', text.length);
+    res.json({ text });
   } catch (error) {
-    console.error('File Loading Error:', error);
-    res.status(500).json({ error: 'Internal server error during PDF load.' });
-    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    console.error('PDF Parsing Error:', error);
+    res.status(500).json({ error: 'Failed to extract text from resume: ' + (error.message || 'Parser failure') });
+  } finally {
+    if (req.file && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); console.log('Temp file cleaned up.'); }
+      catch (e) { console.error('Cleanup Error:', e); }
+    }
   }
 });
 

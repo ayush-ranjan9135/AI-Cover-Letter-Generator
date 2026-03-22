@@ -122,7 +122,7 @@ const ATSScore = () => {
                             }}>
                                 {isParsing ? (
                                     <div className="loader-md"></div>
-                                ) : fileName ? (
+                                ) : resumeText ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <Check size={20} color="var(--success)" />
                                         <span style={{ fontWeight: '700' }}>{fileName}</span>
@@ -130,7 +130,7 @@ const ATSScore = () => {
                                 ) : (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <Upload size={20} color="var(--text-tertiary)" />
-                                        <span style={{ color: 'var(--text-tertiary)', fontWeight: '600' }}>Upload Professional Resume</span>
+                                        <span style={{ color: 'var(--text-tertiary)', fontWeight: '600' }}>{fileName || "Upload Professional Resume"}</span>
                                     </div>
                                 )}
                             </label>

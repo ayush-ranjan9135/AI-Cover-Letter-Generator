@@ -184,9 +184,9 @@ const CoverGenerator = () => {
                                 border: '1px solid var(--border-subtle)', borderRadius: '14px',
                                 cursor: 'pointer', transition: 'all 0.2s ease', background: 'rgba(255,255,255,0.02)'
                             }}>
-                                {isParsing ? <div className="btn-loader"></div> : <Upload size={20} color="var(--text-tertiary)" />}
+                                {isParsing ? <div className="btn-loader"></div> : resumeText ? <Check size={20} color="var(--success)" /> : <Upload size={20} color="var(--text-tertiary)" />}
                                 <span style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', fontWeight: '600' }}>
-                                    {fileName || "Personalize via Resume"}
+                                    {resumeText ? fileName : (fileName || "Personalize via Resume")}
                                 </span>
                             </label>
                         </div>
