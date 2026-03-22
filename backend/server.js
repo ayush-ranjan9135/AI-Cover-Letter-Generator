@@ -9,6 +9,14 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 import PDFParser from 'pdf2json';
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
+
+// Polyfills for PDF parsing libraries in Serverless/Modern Node environments
+if (typeof global.DOMMatrix === 'undefined') {
+    global.DOMMatrix = class DOMMatrix {
+        constructor() { this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0; }
+    };
+}
 
 dotenv.config();
 
@@ -41,52 +49,90 @@ app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
   console.log('[Parser] PDF upload request received...');
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-  const pdfParser = new PDFParser(null, 1);
+  let text = '';
+  const dataBuffer = fs.readFileSync(req.file.path);
+  console.log(`[Parser] File size: ${dataBuffer.length} bytes`);
 
-  const parsePromise = new Promise((resolve, reject) => {
-    pdfParser.on("pdfParser_dataError", errData => {
-        console.error('[Parser] Event Error:', errData);
-        reject(new Error(errData.parserError || "Parser emitted error event"));
+  // Engine 1: pdf2json (Fast, manual map)
+  try {
+    const pdfParser = new PDFParser(null, 1);
+    const pdf2jsonText = await new Promise((resolve, reject) => {
+      pdfParser.on("pdfParser_dataError", err => {
+        console.error('[Parser] Engine 1 Error event:', err);
+        reject(err);
+      });
+      pdfParser.on("pdfParser_dataReady", (pdfData) => {
+        try {
+          const extracted = pdfData.Pages
+            .flatMap(p => p.Texts)
+            .map(t => t.R.map(r => {
+              try { return decodeURIComponent(r.T); } catch { return r.T; }
+            }).join(''))
+            .join(' ');
+          resolve(extracted);
+        } catch (e) { 
+          console.error('[Parser] Engine 1 Mapping Error:', e);
+          reject(e); 
+        }
+      });
+      pdfParser.parseBuffer(dataBuffer);
     });
-    pdfParser.on("pdfParser_dataReady", (pdfData) => {
-      console.log('[Parser] Data Ready event received');
-      try {
-        const text = pdfData.Pages
-          .flatMap(p => p.Texts)
-          .map(t => t.R.map(r => {
-            try { return decodeURIComponent(r.T); } catch { return r.T; }
-          }).join(''))
-          .join(' ');
-        resolve(text);
-      } catch (e) {
-        console.error('[Parser] Manual extraction failed:', e);
-        reject(e);
+    if (pdf2jsonText?.trim().length > 20) {
+      text = pdf2jsonText;
+      console.log('[Parser] Engine 1 (pdf2json) Success');
+    } else {
+      console.warn('[Parser] Engine 1 returned insufficient text length');
+    }
+  } catch (e) { console.warn('[Parser] Engine 1 Failed:', e.message); }
+
+  // Engine 2: pdfjs-dist (Standard-compliant fallback)
+  if (!text || text.trim().length < 20) {
+    console.log('[Parser] Starting Engine 2 (pdfjs-dist)...');
+    try {
+      const loadingTask = pdfjs.getDocument({ data: dataBuffer, useSystemFonts: true });
+      const pdf = await loadingTask.promise;
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        fullText += content.items.map(item => item.str).join(' ') + ' ';
       }
-    });
-  });
+      if (fullText.trim().length > 20) {
+        text = fullText;
+        console.log('[Parser] Engine 2 (pdfjs) Success');
+      } else {
+        console.warn('[Parser] Engine 2 returned insufficient text length');
+      }
+    } catch (e) { console.warn('[Parser] Engine 2 Failed:', e.message); }
+  }
+
+  // Engine 3: Gemini AI (Ultimate AI failover)
+  if (!text || text.trim().length < 20) {
+    console.log('[Parser] Starting Engine 3 (Gemini Failover)...');
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const result = await model.generateContent([
+        { inlineData: { data: dataBuffer.toString("base64"), mimeType: "application/pdf" } },
+        "Extract all text from this resume. Return only the extracted text."
+      ]);
+      const geminiText = result.response.text();
+      if (geminiText?.trim().length > 20) {
+        text = geminiText;
+        console.log('[Parser] Engine 3 (Gemini) Success');
+      } else {
+        console.warn('[Parser] Engine 3 returned insufficient text length');
+      }
+    } catch (e) { console.warn('[Parser] Engine 3 Failed:', e.message); }
+  }
 
   try {
-    const dataBuffer = fs.readFileSync(req.file.path);
-    console.log(`[Parser] File read into buffer, size: ${dataBuffer.length} bytes`);
-    
-    pdfParser.parseBuffer(dataBuffer);
-    const text = await parsePromise;
-    
-    if (!text || text.trim().length === 0) {
-        throw new Error("Text extraction returned empty string.");
-    }
-
-    console.log('[Parser] Success! Final text length:', text.length);
-    console.log('[Parser] Sample:', text.substring(0, 50).replace(/\n/g, ' '));
+    if (!text || text.trim().length < 10) throw new Error("All extraction engines failed to recover text.");
     res.json({ text });
   } catch (error) {
-    console.error('[Parser] Final Catch:', error.message);
-    res.status(500).json({ error: 'Failed to extract text from resume: ' + (error.message || 'Parser failure') });
+    res.status(500).json({ error: error.message });
   } finally {
-    if (req.file && fs.existsSync(req.file.path)) {
-      try { fs.unlinkSync(req.file.path); console.log('[Parser] Temp file cleaned up.'); }
-      catch (e) { console.error('[Parser] Cleanup Error:', e); }
-    }
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
   }
 });
 
@@ -126,7 +172,7 @@ app.post('/api/ats-score', async (req, res) => {
 
     // Initialize Gemini AI SDK
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const modelInstance = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const modelInstance = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     console.log(`[ATS] Generating ATS score for ${name} at ${company}...`);
 
@@ -223,9 +269,8 @@ app.post('/api/generate-cover-letter', async (req, res) => {
        Return ONLY the final cover letter text.
     `;
 
-    // Initialize Gemini AI SDK
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const modelInstance = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const modelInstance = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     console.log(`[AI] Generating letter for ${name} at ${company}...`);
 
@@ -246,11 +291,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(port, () => {
-        console.log(`Server is running on port ${port}`);
-    });
-}
+// Force-listen on local environments
+app.listen(port, () => {
+    console.log(`Server is listening on http://localhost:${port}`);
+});
 
 export default app;

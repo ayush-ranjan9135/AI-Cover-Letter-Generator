@@ -7,21 +7,20 @@ import { useTheme } from '../../context/ThemeContext';
 const AnimatedSphere = ({ color }) => {
   const mesh = useRef();
 
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
+  useFrame((state, delta) => {
     if (mesh.current) {
+      mesh.current.rotation.y += delta * 0.2;
       mesh.current.distort = THREE.MathUtils.lerp(
         mesh.current.distort,
-        0.4 + Math.sin(time) * 0.1,
+        0.4 + Math.sin(state.clock.elapsedTime) * 0.1,
         0.05
       );
     }
   });
 
   return (
-    <Sphere args={[1, 100, 200]} scale={2.2}>
+    <Sphere ref={mesh} args={[1, 100, 200]} scale={2.2}>
       <MeshDistortMaterial
-        ref={mesh}
         color={color}
         attach="material"
         distort={0.4}

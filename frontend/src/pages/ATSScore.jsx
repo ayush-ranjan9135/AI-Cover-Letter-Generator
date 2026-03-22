@@ -15,9 +15,10 @@ const ATSScore = () => {
     const [atsResult, setAtsResult] = useState(null);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
+        name: '',
         role: '',
-        skills: '',
-        organization: ''
+        company: '',
+        skills: ''
     });
 
     const handleInputChange = (e) => {
@@ -47,6 +48,7 @@ const ATSScore = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 timeout: 30000 
             });
+            setResumeText(response.data.text);
         } catch (err) {
             console.error("Upload error:", err);
             const errorMessage = err.response?.data?.error || err.message || 'Failed to parse PDF resume.';
@@ -83,6 +85,7 @@ const ATSScore = () => {
                 ...formData,
                 resumeText
             });
+            setAtsResult(response.data);
         } catch (err) {
             console.error("ATS error:", err);
             const errorMessage = err.response?.data?.error || err.message || 'Failed to calculate ATS score.';
@@ -105,6 +108,23 @@ const ATSScore = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '40px' }} className="ats-grid">
                 <InteractiveCard className={isScoring ? "neural-pulse" : ""} style={{ padding: '40px' }}>
                     <form onSubmit={calculateATS}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div className="form-group">
+                                <label className="label-premium">Name</label>
+                                <input 
+                                    type="text" name="name" value={formData.name} onChange={handleInputChange}
+                                    className="input-premium" placeholder="Your Name"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label className="label-premium">Company</label>
+                                <input 
+                                    type="text" name="company" value={formData.company} onChange={handleInputChange}
+                                    className="input-premium" placeholder="Target Org"
+                                />
+                            </div>
+                        </div>
+
                         <div className="form-group">
                             <label className="label-premium">Target Role</label>
                             <input 
