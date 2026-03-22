@@ -1,0 +1,1 @@
+{"error":"Failed to parse PDF: Setting up fake worker failed: \"No \"GlobalWorkerOptions.workerSrc\" specified.\"."}
