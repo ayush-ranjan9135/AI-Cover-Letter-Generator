@@ -46,7 +46,12 @@ app.post('/api/parse-pdf', upload.single('resume'), async (req, res) => {
   const parsePromise = new Promise((resolve, reject) => {
     pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
     pdfParser.on("pdfParser_dataReady", () => {
-      const text = pdfParser.getRawTextContent();
+      let text = pdfParser.getRawTextContent();
+      try {
+          text = decodeURIComponent(text);
+      } catch (e) {
+          console.warn('Could not decode PDF text fully, using raw.');
+      }
       resolve(text);
     });
   });
@@ -116,22 +121,26 @@ app.post('/api/ats-score', async (req, res) => {
     const result = await modelInstance.generateContent(prompt);
     const text = result.response.text();
     
-    // Extract JSON from potential Markdown formatting
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Extract JSON from potential Markdown formatting or extra text
     let parsed;
     try {
-      parsed = JSON.parse(text);
-    } catch (e) {
-      console.warn('[ATS] Failed to parse JSON, cleaning up text...');
-      const cleanJson = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+      const jsonStart = text.indexOf('{');
+      const jsonEnd = text.lastIndexOf('}') + 1;
+      if (jsonStart === -1 || jsonEnd === 0) {
+          throw new Error("No JSON found in AI response");
+      }
+      const cleanJson = text.substring(jsonStart, jsonEnd);
       parsed = JSON.parse(cleanJson);
+    } catch (e) {
+      console.error('[ATS] JSON Extraction Failed. Raw text:', text);
+      throw new Error("Failed to parse AI evaluation into structured data.");
     }
 
     const finalResult = {
         score: parsed.score || 0,
-        feedback: parsed.feedback || [],
-        missingKeywords: parsed.missingKeywords || [],
-        strengths: parsed.strengths || []
+        feedback: Array.isArray(parsed.feedback) ? parsed.feedback : [],
+        missingKeywords: Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : [],
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths : []
     };
 
     console.log('[ATS] Score calculated successfully:', finalResult.score);
