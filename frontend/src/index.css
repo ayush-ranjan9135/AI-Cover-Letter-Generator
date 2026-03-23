@@ -42,6 +42,7 @@
   --nav-height: 80px;
   --container-width: 1200px;
   --nav-mobile-bg: rgba(10, 15, 30, 0.95);
+  --card-padding: 40px;
 }
 
 [data-theme='light'] {
@@ -308,8 +309,8 @@ body {
   background: var(--border-bright);
 }
 
-/* --- MOBILE RESPONSIVENESS --- */
 @media (max-width: 768px) {
+  :root { --card-padding: 24px; }
   .title-hero { font-size: 3rem; }
   .title-section { font-size: 1.75rem; }
   .glass-container { border-radius: 16px; padding: 1.5rem !important; }

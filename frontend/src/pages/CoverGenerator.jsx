@@ -121,17 +121,17 @@ const CoverGenerator = () => {
     return (
         <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            style={{ paddingTop: '160px', paddingBottom: '100px', maxWidth: '1200px', margin: '0 auto', padding: '160px 24px 100px' }}
+            className="page-container"
         >
             <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                <h2 style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '16px' }} className="gradient-text">Neural Narrative Synthesis</h2>
+                <h2 className="gradient-text title-responsive-h2">Neural Narrative Synthesis</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Generate high-impact professional stories tailored to your target role.</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }} className="gen-grid">
-                <InteractiveCard className={isGenerating ? "neural-pulse" : ""} style={{ padding: '40px' }}>
+                <InteractiveCard className={isGenerating ? "neural-pulse" : ""} style={{ padding: 'var(--card-padding, 40px)' }}>
                     <form onSubmit={generateLetter}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                        <div className="form-grid-3">
                             <div className="form-group">
                                 <label className="label-premium">Name</label>
                                 <div className="input-wrapper">
@@ -242,8 +242,37 @@ const CoverGenerator = () => {
             </div>
 
             <style>{`
+                .page-container {
+                    padding-top: 160px;
+                    padding-bottom: 100px;
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding-left: 24px;
+                    padding-right: 24px;
+                }
+
+                .title-responsive-h2 {
+                    font-size: clamp(2rem, 5vw, 3rem);
+                    font-weight: 900;
+                    margin-bottom: 16px;
+                }
+
+                .form-grid-3 {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 16px;
+                    margin-bottom: 24px;
+                }
+
                 @media (max-width: 968px) {
                     .gen-grid { grid-template-columns: 1fr !important; }
+                    .form-grid-3 { grid-template-columns: 1fr !important; }
+                    .page-container { padding-top: 120px; }
+                }
+
+                @media (max-width: 480px) {
+                    .page-container { padding-top: 100px; padding-left: 16px; padding-right: 16px; }
+                    .title-responsive-h2 { font-size: 1.8rem; }
                 }
             `}</style>
         </motion.div>

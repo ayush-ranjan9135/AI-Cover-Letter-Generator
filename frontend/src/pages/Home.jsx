@@ -17,10 +17,10 @@ const Home = () => {
   return (
     <motion.div 
       initial="hidden" animate="visible" variants={containerVariants}
-      style={{ paddingTop: '160px', paddingBottom: '100px' }}
+      className="page-container"
     >
       {/* Hero Section */}
-      <section style={{ textAlign: 'center', marginBottom: '120px' }}>
+      <section className="hero-section">
         <motion.div variants={itemVariants} className="glass-premium" style={{ 
           display: 'inline-flex', alignItems: 'center', gap: '8px', 
           padding: '8px 16px', borderRadius: '100px', marginBottom: '32px',
@@ -48,11 +48,11 @@ const Home = () => {
           to align your profile with high-resonance organizational requirements.
         </motion.p>
 
-        <motion.div variants={itemVariants} style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-          <Link to="/cover-generator" className="btn btn-primary" style={{ padding: '18px 40px', fontSize: '1rem' }}>
+        <motion.div variants={itemVariants} className="cta-container">
+          <Link to="/cover-generator" className="btn btn-primary btn-responsive">
             <Sparkles size={20} /> Start Synthesis
           </Link>
-          <Link to="/ats-score" className="btn btn-secondary" style={{ padding: '18px 40px', fontSize: '1rem' }}>
+          <Link to="/ats-score" className="btn btn-secondary btn-responsive">
             <BarChart3 size={20} /> Audit Resume
           </Link>
         </motion.div>
@@ -80,6 +80,42 @@ const Home = () => {
           ))}
         </div>
       </section>
+
+      <style>{`
+        .page-container {
+            padding-top: 160px;
+            padding-bottom: 100px;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 120px;
+            padding: 0 24px;
+        }
+
+        .cta-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-responsive {
+            padding: 18px 40px;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .page-container { padding-top: 120px; }
+            .hero-section { margin-bottom: 80px; }
+            .cta-container { flex-direction: column; align-items: center; gap: 16px; }
+            .btn-responsive { width: 100%; max-width: 320px; }
+        }
+
+        @media (max-width: 480px) {
+            .page-container { padding-top: 100px; }
+            .hero-section { margin-bottom: 60px; }
+        }
+      `}</style>
     </motion.div>
   );
 };
