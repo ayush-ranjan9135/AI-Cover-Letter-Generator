@@ -4,16 +4,16 @@
 
 ![ApplyFlow Banner](https://img.shields.io/badge/ApplyFlow.ai-Neural_Workspace-blueviolet?style=for-the-badge&logo=openai&logoColor=white)
 
-[![Build Status](https://img.shields.io/badge/status-active-success.svg?style=flat-square)](https://github.com/ayush-ranjan9135/AI-Cover-Letter-Generator)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![React](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![GitHub License](https://img.shields.io/github/license/ayush-ranjan9135/AI-Cover-Letter-Generator?style=flat-square&color=yellow)](https://github.com/ayush-ranjan9135/AI-Cover-Letter-Generator/blob/main/LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/ayush-ranjan9135/AI-Cover-Letter-Generator?style=flat-square&color=blue)](https://github.com/ayush-ranjan9135/AI-Cover-Letter-Generator/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/ayush-ranjan9135/AI-Cover-Letter-Generator?style=flat-square&color=orange)](https://github.com/ayush-ranjan9135/AI-Cover-Letter-Generator/network)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=flat-square&logo=nodedotjs)](https://nodejs.org/)
-[![Gemini AI](https://img.shields.io/badge/Gemini_AI-Flash_2.0-orange?style=flat-square&logo=googlecloud)](https://deepmind.google/technologies/gemini/)
+[![Gemini AI](https://img.shields.io/badge/Gemini_AI-Flash_2.0-4285F4?style=flat-square&logo=googlecloud)](https://deepmind.google/technologies/gemini/)
 
 **Elevate your professional profile with neural intelligence tailored to elite organizational demands.**
 
-[Features](#-key-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Deployment](#-deployment)
+[Features](#-key-features) • [Architecture](#-system-architecture) • [Workflow](#-project-flow) • [Tech Stack](#-tech-stack) • [Setup](#-getting-started) • [Contact](#-connect-with-me)
 
 </div>
 
@@ -27,95 +27,111 @@ Whether you're targeting a specialized engineering role or a creative leadership
 
 ---
 
+## 🏗️ System Architecture
+
+ApplyFlow.ai follows a modern full-stack architecture with a triple-engine extraction system to ensure maximum reliability.
+
+```mermaid
+graph TD
+    A[User] -->|Uploads Resume PDF| B(Frontend - React/Vite)
+    B -->|API Request| C[Backend - Node.js/Express]
+    C -->|Extract Text| D{PDF Engine Matrix}
+    D -->|Engine 1: pdf2json| E[Clean Text Data]
+    D -->|Engine 2: pdfjs-dist| E
+    D -->|Engine 3: Gemini AI Failover| E
+    E -->|Analyze/Generate| F[Google Gemini AI]
+    F -->|Structured JSON Result| C
+    C -->|Final Payload| B
+    B -->|Download PDF| G(Generated Assets)
+```
+
+---
+
+## 🔄 Project Flow
+
+1.  **🖱️ Interactive Entry**: The workspace greets you with a sophisticated glassmorphism UI featuring interactive mouse-spotlight dynamics.
+2.  **📄 Intelligent Intake**: Upload your resume in PDF format. Our backend employs a cascading extraction logic to recover text even from complex layouts.
+3.  **🎯 Context Injection**: Provide the target job role and specific keywords or job descriptions.
+4.  **⚡ Neural Synthesis**:
+    *   **ATS Score**: The system performs a semantic gap analysis, providing a compatibility score and actionable feedback.
+    *   **Cover Letter**: Gemini AI generates a high-resonance, professionally formatted cover letter.
+5.  **📥 Export & Success**: Review your results and export them as a professionally structured business document.
+
+---
+
 ## ✨ Key Features
 
-### 💎 Premium Interaction Architecture
-- **🖱️ Neural Mouse Spotlight:** A sophisticated radial cursor-glow system that interacts with the grid layout.
-* **📦 3D Tilt Dynamics:** Interactive workspace cards utilizing `framer-motion` for a tactile, high-end feel.
-* **🌈 Glassmorphism UI:** A sleek, semi-transparent design system with fluid gradients and monospaced highlights.
+### 💎 Premium Interaction UI
+- **Neural Mouse Spotlight**: Sophisticated radial cursor-glow system.
+- **3D Tilt Dynamics**: Tactile workspace cards utilizing `framer-motion`.
+- **Glassmorphism Design**: Sleek, semi-transparent UI with fluid gradients.
 
 ### 🧠 Intelligent Career Tools
-* **✍️ Neural Synthesis:** High-resonance cover letter generation powered by **Google Gemini Flash**. No generic templates—pure, context-aware writing.
-* **📊 ATS Compatibility Matrix:** Real-time analysis of your resume against target roles with an interactive scoring gauge.
-* **📄 Professional PDF Engine:** Multi-paragraph, professionally formatted PDF exports with formal business structures.
+- **Neural Synthesis**: High-resonance cover letter generation via **Google Gemini Flash**.
+- **ATS Compatibility Matrix**: Real-time analysis with an interactive scoring gauge.
+- **Multi-Engine PDF Parser**: Triple-fallback system (pdf2json -> pdfjs -> Gemini) for 100% text recovery.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### **Frontend Architecture**
-- **Framework:** React 18 (Vite 6) ⚡
-- **Animation Engine:** Framer Motion (3D Tilt & Micro-animations) 🪄
-- **Iconography:** Lucide-React 🎨
-- **Communication:** Axios 🌐
-
-### **Backend & AI**
-- **Server:** Node.js & Express 🚀
-- **AI Engine:** Google Generative AI (Gemini 2.0 Flash) 🧠
-- **PDF Processing:** pdf-parse & jsPDF 📄
-- **File Handling:** Multer (Security-first upload logic) 🛡️
+| Component | Technology |
+| :--- | :--- |
+| **Frontend** | React 18, Vite 6, Framer Motion, Axios |
+| **Backend** | Node.js, Express, Multer |
+| **AI Integration** | Google Generative AI (Gemini 2.5 Flash) |
+| **PDF Processing** | pdf-parse, pdfjs-dist, jsPDF |
+| **Styling** | Vanilla CSS, Glassmorphism, Responsive Grid |
 
 ---
 
 ## 🚀 Getting Started
 
 ### 1️⃣ Installation
-Clone the architecture and install dependencies for the full stack:
 ```bash
 # Clone the repository
 git clone https://github.com/ayush-ranjan9135/AI-Cover-Letter-Generator.git
 cd AI-Cover-Letter-Generator
 
-# Install Backend Dependencies
-cd backend
-npm install
-
-# Install Frontend Dependencies
-cd ../frontend
-npm install
+# Install Dependencies
+cd backend && npm install
+cd ../frontend && npm install
 ```
 
-### 2️⃣ Environment Configuration
-Create a `.env` file in the `/backend` directory to establish the AI link:
+### 2️⃣ Environment Setup
+Create `backend/.env`:
 ```env
 PORT=5000
 GEMINI_API_KEY=your_google_ai_key_here
 ```
 
-### 3️⃣ Launch the Workspace
-Execute the concurrent development environment:
+### 3️⃣ Launch
 ```bash
-# From the root directory
+# From root
 npm run dev
 ```
-Access the workspace at `http://localhost:5173` 🌐
+Workspace: `http://localhost:5173` 🌐
 
 ---
 
-## 🌐 Deployment
+## 🌐 Connect With Me
 
-This project is pre-configured for **Vercel** serverless environments.
+Let's build the future of career technology together! 🚀
 
-### ⚡ Configuration Essentials:
-- Set `NODE_ENV=production` in your Vercel project settings.
-- Ensure your `GEMINI_API_KEY` is securely added to Environment Variables.
-- The system automatically handles `/tmp` directory mapping for serverless PDF processing.
+<div align="center">
 
----
+[![Portfolio](https://img.shields.io/badge/Portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://alpha-portfolio-five.vercel.app/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ayush-ranjan-9135d3/)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ayush-ranjan9135)
+[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/ayush.__.srivastava?igsh=dW1zdHFjcTZnenV2)
+[![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/share/1AhB4q1WeW/)
 
-## 🤝 Contributing
-
-We welcome contributions to the evolution of ApplyFlow.ai!
-1. Fork the repo. 🍴
-2. Create your feature branch (`git checkout -b feature/NeuralEnhancement`).
-3. Commit your changes (`git commit -m 'Add new 3D effect'`).
-4. Push to the branch (`git push origin feature/NeuralEnhancement`).
-5. Open a Pull Request. ✨
+</div>
 
 ---
 
-## 📧 Contact & Support
+## ⚖️ License
+Distributed under the MIT License. See `LICENSE` for more information.
 
-**Created with precision by [Ayush Ranjan](https://github.com/ayush-ranjan9135).**
-
-Let's build the future of career technology together. 🚀🔥
+---
+**Created with precision by [Ayush Ranjan](https://github.com/ayush-ranjan9135) 🚀🔥**
